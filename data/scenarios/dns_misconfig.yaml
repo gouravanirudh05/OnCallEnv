@@ -1,0 +1,50 @@
+id: dns_misconfig
+title: DNS misconfiguration breaks service discovery
+root_cause_service: api-gateway
+events:
+  - id: ev-1
+    timestamp: -13
+    type: deploy
+    service: api-gateway
+    detail: updated DNS resolver configuration
+    label: root_cause
+  - id: ev-2
+    timestamp: -10
+    type: log
+    service: api-gateway
+    detail: unable to resolve auth-service.internal
+    label: root_cause
+  - id: ev-3
+    timestamp: -8
+    type: alert
+    service: api-gateway
+    detail: P0 auth failures above threshold
+    label: symptom
+  - id: ev-4
+    timestamp: -7
+    type: log
+    service: auth-service
+    detail: connection refused from api-gateway
+    label: symptom
+  - id: ev-5
+    timestamp: -6
+    type: metric
+    service: checkout-service
+    detail: error_rate 0.004 -> 0.12
+    label: symptom
+  - id: ev-6
+    timestamp: -4
+    type: metric
+    service: postgres-primary
+    detail: cpu 40% -> 41%
+    label: noise
+  - id: ev-7
+    timestamp: -2
+    type: page
+    service: on-call
+    detail: on-call paged
+    label: contributing_factor
+investigations:
+  - id: diag-1
+    prompt: check DNS resolver config
+    reveal: resolver points to deprecated internal zone

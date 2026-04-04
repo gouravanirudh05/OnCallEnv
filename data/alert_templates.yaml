@@ -1,0 +1,121 @@
+templates:
+  - name: latency_spike
+    metric: latency_ms
+    base_threshold: 250
+    severity_map:
+      P0: 4000
+      P1: 2500
+      P2: 1200
+      P3: 600
+    labels:
+      category: performance
+  - name: error_rate
+    metric: error_rate
+    base_threshold: 0.02
+    severity_map:
+      P0: 0.4
+      P1: 0.2
+      P2: 0.1
+      P3: 0.05
+    labels:
+      category: reliability
+  - name: saturation
+    metric: cpu_utilization
+    base_threshold: 0.85
+    severity_map:
+      P0: 0.98
+      P1: 0.95
+      P2: 0.9
+      P3: 0.85
+    labels:
+      category: capacity
+  - name: queue_depth
+    metric: queue_depth
+    base_threshold: 200
+    severity_map:
+      P0: 1200
+      P1: 800
+      P2: 500
+      P3: 300
+    labels:
+      category: throughput
+  - name: cache_hit_rate_drop
+    metric: cache_hit_rate
+    base_threshold: 0.92
+    severity_map:
+      P0: 0.4
+      P1: 0.6
+      P2: 0.75
+      P3: 0.85
+    labels:
+      category: cache
+  - name: db_connection_errors
+    metric: db_connection_errors
+    base_threshold: 5
+    severity_map:
+      P0: 120
+      P1: 70
+      P2: 30
+      P3: 10
+    labels:
+      category: database
+  - name: dependency_timeouts
+    metric: dependency_timeouts
+    base_threshold: 10
+    severity_map:
+      P0: 300
+      P1: 160
+      P2: 80
+      P3: 40
+    labels:
+      category: dependency
+  - name: disk_io_latency
+    metric: disk_io_latency_ms
+    base_threshold: 15
+    severity_map:
+      P0: 120
+      P1: 80
+      P2: 50
+      P3: 30
+    labels:
+      category: storage
+  - name: request_saturation
+    metric: req_per_second
+    base_threshold: 1200
+    severity_map:
+      P0: 12000
+      P1: 8000
+      P2: 4000
+      P3: 2000
+    labels:
+      category: traffic
+  - name: auth_failures
+    metric: auth_failure_rate
+    base_threshold: 0.01
+    severity_map:
+      P0: 0.35
+      P1: 0.2
+      P2: 0.1
+      P3: 0.05
+    labels:
+      category: auth
+  - name: retry_spike
+    metric: retry_rate
+    base_threshold: 0.05
+    severity_map:
+      P0: 0.5
+      P1: 0.3
+      P2: 0.18
+      P3: 0.1
+    labels:
+      category: reliability
+  - name: deployment_errors
+    metric: deploy_error_rate
+    base_threshold: 0.02
+    severity_map:
+      P0: 0.4
+      P1: 0.25
+      P2: 0.12
+      P3: 0.06
+    labels:
+      category: deployment

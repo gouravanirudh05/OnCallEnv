@@ -1,0 +1,56 @@
+id: db_failover
+title: Database failover with replica lag
+root_cause_service: postgres-primary
+events:
+  - id: ev-1
+    timestamp: -9
+    type: metric
+    service: postgres-primary
+    detail: disk_io_latency 12ms -> 180ms
+    label: root_cause
+  - id: ev-2
+    timestamp: -7
+    type: alert
+    service: postgres-primary
+    detail: P1 disk_io_latency threshold exceeded
+    label: root_cause
+  - id: ev-3
+    timestamp: -6
+    type: log
+    service: postgres-primary
+    detail: WAL apply lag 90s on replica
+    label: contributing_factor
+  - id: ev-4
+    timestamp: -5
+    type: metric
+    service: payments-api
+    detail: error_rate 0.01 -> 0.22
+    label: symptom
+  - id: ev-5
+    timestamp: -4
+    type: log
+    service: payments-api
+    detail: write timeout on postgres-primary
+    label: symptom
+  - id: ev-6
+    timestamp: -3
+    type: metric
+    service: checkout-service
+    detail: latency 150ms -> 2200ms
+    label: symptom
+  - id: ev-7
+    timestamp: -2
+    type: alert
+    service: notification-service
+    detail: P2 email queue depth spike
+    label: noise
+  - id: ev-8
+    timestamp: -1
+    type: page
+    service: on-call
+    detail: on-call paged
+    label: contributing_factor
+investigations:
+  - id: diag-1
+    prompt: check replication status
+    reveal: replica lag indicates failover not completed

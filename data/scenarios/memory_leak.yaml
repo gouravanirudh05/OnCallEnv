@@ -1,0 +1,50 @@
+id: memory_leak
+title: Memory leak triggers OOM kills
+root_cause_service: search-service
+events:
+  - id: ev-1
+    timestamp: -14
+    type: metric
+    service: search-service
+    detail: memory usage 1.2GB -> 3.8GB over 6 hours
+    label: root_cause
+  - id: ev-2
+    timestamp: -9
+    type: log
+    service: search-service
+    detail: gc pauses increasing after cache warmup
+    label: contributing_factor
+  - id: ev-3
+    timestamp: -7
+    type: alert
+    service: search-service
+    detail: P1 memory utilization above threshold
+    label: symptom
+  - id: ev-4
+    timestamp: -6
+    type: log
+    service: search-service
+    detail: container OOMKilled
+    label: symptom
+  - id: ev-5
+    timestamp: -5
+    type: metric
+    service: api-gateway
+    detail: error_rate 0.002 -> 0.06
+    label: symptom
+  - id: ev-6
+    timestamp: -3
+    type: alert
+    service: checkout-service
+    detail: P2 latency spike
+    label: noise
+  - id: ev-7
+    timestamp: -2
+    type: page
+    service: on-call
+    detail: on-call paged
+    label: contributing_factor
+investigations:
+  - id: diag-1
+    prompt: inspect heap profile
+    reveal: unbounded cache growth in search-service handler

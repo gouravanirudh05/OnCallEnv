@@ -1,0 +1,49 @@
+services:
+  - name: checkout-service
+    depends_on: [payments-api, inventory-service]
+    team: commerce
+    tier: 1
+  - name: payments-api
+    depends_on: [postgres-primary, fraud-service]
+    team: payments
+    tier: 2
+  - name: inventory-service
+    depends_on: [postgres-primary]
+    team: commerce
+    tier: 2
+  - name: fraud-service
+    depends_on: [redis-cluster]
+    team: risk
+    tier: 2
+  - name: notification-service
+    depends_on: [email-gateway]
+    team: comms
+    tier: 2
+  - name: email-gateway
+    depends_on: [smtp-relay]
+    team: comms
+    tier: 3
+  - name: postgres-primary
+    depends_on: [disk-io-controller]
+    team: infra
+    tier: 3
+  - name: redis-cluster
+    depends_on: [disk-io-controller]
+    team: infra
+    tier: 3
+  - name: disk-io-controller
+    depends_on: []
+    team: infra
+    tier: 3
+  - name: auth-service
+    depends_on: [postgres-primary]
+    team: identity
+    tier: 1
+  - name: search-service
+    depends_on: [postgres-primary]
+    team: discovery
+    tier: 2
+  - name: api-gateway
+    depends_on: [auth-service, checkout-service, search-service]
+    team: platform
+    tier: 1
