@@ -1,11 +1,13 @@
 # OnCallEnv
 
-OpenEnv-compliant environment that simulates on-call SRE incident response. Agents receive alerts, logs, and service topology and must classify severities, deduplicate alert storms, and label incident timelines.
+OnCallEnv is an OpenEnv environment for on call incident response. Agents see alerts, logs, and service topology. They must classify severity, reduce alert storms, and label incident timelines.
+
+This repo follows the OpenEnv hackathon requirements. It includes three tasks, deterministic graders, a baseline inference script, and a server that passes OpenEnv validation.
 
 ## Quick start
 
 ```bash
-pip install -e .
+uv sync
 ```
 
 ```python
@@ -25,69 +27,45 @@ obs, reward, done, info = env.step(action)
 
 ## Tasks
 
-### Task 1 — Severity classification
-Classify the true severity for 5–8 alerts, including correlated alerts, a time-of-day adjusted alert, and a known false positive.
+Task 1. Severity classification
+Classify the true severity for a small set of alerts. The set includes correlated alerts, a time adjusted alert, and a known false positive.
 
-### Task 2 — Alert storm deduplication
-Identify the root cause alert within a dependency graph, label downstream symptoms, silence false positives, and escalate to the right team.
+Task 2. Alert storm deduplication
+Identify the root cause alert, label downstream symptoms, silence false positives, and escalate to the right team.
 
-### Task 3 — Incident timeline labeling
+Task 3. Incident timeline labeling
 Label shuffled events as root cause, symptom, contributing factor, or noise. INVESTIGATE actions can reveal diagnostics.
 
 ## Observation space
 
-The observation contains:
-- `alerts`: structured alerts with severity metadata
-- `logs`: recent log lines
-- `service_graph`: dependency graph of services
-- `budget_remaining`: steps left in the episode
-- `context`: scenario metadata
-
-See `env/models.py` for the full schema.
+Observations include alerts, logs, the service graph, remaining budget, and scenario context. See `env/models.py` for the full schema.
 
 ## Action space
 
-Actions are discrete and typed:
-- `CLASSIFY_ALERT` with `severity`
-- `LABEL_EVENT` with `event_label`
-- `SILENCE_ALERT`
-- `ESCALATE` with `team` and `severity`
-- `REMEDIATE` with `remediation`
-- `INVESTIGATE` with `investigation_id`
-- `HOLD`
-
-See `env/models.py` for the full schema.
+Actions are discrete and typed. The main actions are CLASSIFY_ALERT, LABEL_EVENT, SILENCE_ALERT, ESCALATE, REMEDIATE, INVESTIGATE, and HOLD. See `env/models.py` for the full schema.
 
 ## Baseline inference
 
-Run the baseline script (uses OpenAI client):
-
 ```bash
-OPENAI_API_KEY=... MODEL_NAME=... python inference.py
+OPENAI_API_KEY=... MODEL_NAME=... uv run python inference.py
 ```
 
-The script emits the required `[START]`, `[STEP]`, and `[END]` lines for each task.
+The script prints the required [START], [STEP], and [END] lines for each task.
 
-## Development
-
-Run tests:
+## Tests
 
 ```bash
-pytest
+uv run pytest
 ```
 
 ## Server
-
-Run the OpenEnv server locally:
 
 ```bash
 uv run server
 ```
 
-Or with uvicorn directly:
-
 ```bash
-uvicorn server.app:app --host 0.0.0.0 --port 8000
+uv run uvicorn server.app:app --host 0.0.0.0 --port 8000
 ```
 
 ## Docker
@@ -95,4 +73,18 @@ uvicorn server.app:app --host 0.0.0.0 --port 8000
 ```bash
 docker build -t oncall-env -f server/Dockerfile .
 docker run -p 8000:8000 oncall-env
+```
+
+## OpenEnv validation
+
+```bash
+uv run openenv validate
+```
+
+```bash
+uv run uvicorn server.app:app --host 127.0.0.1 --port 8000
+```
+
+```bash
+uv run openenv validate --url http://127.0.0.1:8000
 ```

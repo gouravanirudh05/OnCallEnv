@@ -34,6 +34,10 @@ Added `server/` with a minimal wrapper to expose `OnCallEnv` via OpenEnv's FastA
 The core env remains local-only and deterministic; the wrapper only adapts reset/step/state
 to the OpenEnv HTTP schema to satisfy validation and deployment requirements.
 
+## Use uv for dependency management
+Standardize on uv (`uv sync`, `uv run`) for installs and execution to keep environments
+reproducible across machines without local pip state divergence.
+
 ---
 
 <!-- Add new decisions below as you make them -->

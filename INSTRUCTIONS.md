@@ -313,5 +313,5 @@ FROM python:3.11-slim
 # install deps, copy source, CMD runs inference.py
 ```
 
-Must pass: `docker build -t oncall-env . && docker run oncall-env`
+Must pass: `docker build -t oncall-env -f server/Dockerfile . && docker run oncall-env`
 HF Space tag: `openenv`

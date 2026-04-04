@@ -17,3 +17,5 @@
 [2026-04-04] fix: update generator to respect frozen models
 [2026-04-05] infra: add OpenEnv server, manifest, and dependency metadata
 [2026-04-05] feat: add baseline inference script and README docs
+[2026-04-05] chore: switch docs and validation to uv-first workflow
+[2026-04-05] test: add server wrapper tests and runtime validation

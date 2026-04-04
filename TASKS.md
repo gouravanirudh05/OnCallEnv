@@ -39,7 +39,7 @@
 
 ## Spec compliance
 - [x] Create `openenv.yaml` with all required metadata
-- [ ] Run `openenv validate` — fix until it passes
+- [x] Run `openenv validate` — fix until it passes
 - [x] Confirm `reset()` / `step()` / `state()` signatures match spec exactly
 
 ## Inference script
