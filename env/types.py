@@ -13,6 +13,7 @@ class EpisodeState:
     seed: int
     step: int
     budget: int
+    invalid_actions: int = 0
     alerts: List[Alert] = field(default_factory=list)
     logs: List[LogLine] = field(default_factory=list)
     service_graph: List[ServiceNode] = field(default_factory=list)

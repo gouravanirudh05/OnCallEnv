@@ -11,3 +11,7 @@
 [2026-04-04] feat: add task3 scenario templates and generator/grader logic
 [2026-04-04] test: add task3 generator and grader tests
 [2026-04-04] chore: ignore reference env and tutorials in git
+[2026-04-04] feat: refine reward shaping and task3 normalization
+[2026-04-04] test: add reward shaping tests
+[2026-04-04] test: add model immutability and determinism tests
+[2026-04-04] fix: update generator to respect frozen models

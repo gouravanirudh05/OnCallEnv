@@ -20,9 +20,15 @@
 - Added Task 3 generator/grader tests
 - Verified Task 2/3 generator and grader tests
 - Updated gitignore to exclude reference materials
+- Moved tutorials and hackathon instructions into tutorials/
+- Tightened Task 3 grading normalization and reward shaping
+- Added reward shaping tests
+- Added model immutability and serialization tests
+- Added determinism coverage for Task 1 generator
+- Fixed generator updates for frozen Pydantic models
 
 ## Open tasks
-- Add tests for models, determinism, graders, reward shaping
+- None
 
 ## Recent decisions
 - Track decisions in DECISIONS.md and changes in CHANGELOG.md
@@ -58,6 +64,20 @@
 - tests/test_task3_generator.py
 - tests/test_task3_grader.py
 - .gitignore
+- tutorials/Hackathon_Instructions.md
+- tutorials/deployement_tutorial.md
+- tutorials/environment_tutorial.md
+- tutorials/scaling_tutorial.md
+- tutorials/training_tutorial.md
+- env/types.py
+- env/grader.py
+- env/reward.py
+- env/env.py
+- tests/test_reward_shaping.py
+- env/models.py
+- tests/test_models.py
+- tests/test_task1_generator.py
+- env/generator.py
 
 ## Pending commands/tests
 - None

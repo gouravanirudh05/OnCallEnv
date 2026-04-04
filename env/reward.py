@@ -2,7 +2,13 @@
 
 from typing import Dict
 
-from .grader import _task1_correct_score, _task1_misclassification_penalty
+from .grader import (
+    _task1_correct_score,
+    _task1_misclassification_penalty,
+    _task3_correct_score,
+    _task3_mislabel_penalty,
+    _task3_normalized,
+)
 from .models import Action, ActionType
 from .types import EpisodeState
 
@@ -11,7 +17,7 @@ def compute_reward(state: EpisodeState, action: Action, valid: bool) -> float:
     """Compute a per-step reward signal."""
 
     if not valid:
-        return -0.02
+        return -0.02 - (0.01 * state.invalid_actions)
 
     if action.action_type == ActionType.HOLD:
         return -0.05
@@ -36,7 +42,9 @@ def compute_reward(state: EpisodeState, action: Action, valid: bool) -> float:
         true_label = state.ground_truth.get("event_labels", {}).get(action.target_id)
         if true_label is None:
             return -0.02
-        return 0.08 if action.event_label.value == true_label else -0.05
+        if action.event_label.value == true_label:
+            return _task3_correct_score(true_label)
+        return _task3_mislabel_penalty(true_label, action.event_label.value)
 
     if action.action_type == ActionType.ESCALATE:
         escalation = state.ground_truth.get("escalation", {})
@@ -59,9 +67,34 @@ def compute_reward(state: EpisodeState, action: Action, valid: bool) -> float:
 
 def episode_bonus(state: EpisodeState) -> Dict[str, float]:
     """Compute episode-level bonus components."""
-
-    return {
+    bonuses = {
         "efficiency": 0.0,
         "zero_false_positive_errors": 0.0,
         "perfect_root_cause": 0.0,
     }
+
+    initial_budget = state.budget + state.step
+    if initial_budget > 0 and state.step <= int(initial_budget * 0.6):
+        bonuses["efficiency"] = 0.15
+
+    if state.task_id == 2:
+        false_positive_ids = [
+            alert_id
+            for alert_id, label in state.ground_truth.get("event_labels", {}).items()
+            if label == "false_positive"
+        ]
+        if false_positive_ids and all(
+            alert_id in state.silenced_alerts for alert_id in false_positive_ids
+        ):
+            bonuses["zero_false_positive_errors"] = 0.10
+
+        root_service = state.ground_truth.get("root_cause")
+        if root_service:
+            root_alert = next(
+                (alert for alert in state.alerts if alert.service == root_service),
+                None,
+            )
+            if root_alert and state.labelled_events.get(root_alert.id) == "root_cause":
+                bonuses["perfect_root_cause"] = 0.20
+
+    return bonuses

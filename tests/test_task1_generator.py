@@ -37,3 +37,11 @@ def test_task1_correlated_alerts_are_p0():
 
     for alert_id in correlated:
         assert gt["alerts"][alert_id] == "P0"
+
+
+def test_task1_different_seed_changes_alerts():
+    first = generate_episode(task_id=1, seed=42, budget=20)
+    second = generate_episode(task_id=1, seed=43, budget=20)
+    assert [alert.model_dump() for alert in first.alerts] != [
+        alert.model_dump() for alert in second.alerts
+    ]

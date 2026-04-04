@@ -142,7 +142,8 @@ def _generate_task1(
 
     logs = _generate_logs(rng, service_graph, count=5)
     for alert in correlated:
-        alert.severity_raw = "P2"
+        alert_index = alerts.index(alert)
+        alerts[alert_index] = alert.model_copy(update={"severity_raw": "P2"})
 
     ground_truth_bundle = {
         "alerts": ground_truth,
@@ -178,7 +179,9 @@ def _generate_task2(
 
     # Root cause alert.
     root_alert = _build_alert_from_template(rng, root, templates, alert_id="alert-root")
-    root_alert.severity_raw = rng.choice(["P1", "P2"])
+    root_alert = root_alert.model_copy(
+        update={"severity_raw": rng.choice(["P1", "P2"])}
+    )
     append_alert(root_alert, "root_cause")
 
     # Symptom alerts for downstream services.

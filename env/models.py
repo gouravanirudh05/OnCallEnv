@@ -7,7 +7,7 @@ Defines the action and observation schema used by the environment.
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 try:
     from openenv.core.env_server.types import Action as OpenEnvAction
@@ -20,7 +20,11 @@ except ImportError:  # pragma: no cover
         """Fallback Observation base when openenv is unavailable."""
 
 
-class Alert(BaseModel):
+class FrozenBaseModel(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+
+class Alert(FrozenBaseModel):
     """Monitoring alert emitted by a service."""
 
     id: str = Field(..., description="Unique alert ID")
@@ -37,7 +41,7 @@ class Alert(BaseModel):
     )
 
 
-class LogLine(BaseModel):
+class LogLine(FrozenBaseModel):
     """Single log line from a service."""
 
     timestamp: int = Field(..., description="Unix seconds relative to episode start")
@@ -49,7 +53,7 @@ class LogLine(BaseModel):
     )
 
 
-class ServiceNode(BaseModel):
+class ServiceNode(FrozenBaseModel):
     """Service dependency graph node."""
 
     name: str = Field(..., description="Service name")
@@ -99,6 +103,8 @@ class RemediationAction(str, Enum):
 class Observation(OpenEnvObservation):
     """Observation returned to the agent each step."""
 
+    model_config = ConfigDict(frozen=True)
+
     step: int = Field(..., description="Current step in the episode")
     alerts: List[Alert] = Field(default_factory=list, description="Active alerts")
     logs: List[LogLine] = Field(default_factory=list, description="Recent log lines")
@@ -116,6 +122,8 @@ class Observation(OpenEnvObservation):
 
 class Action(OpenEnvAction):
     """Agent action, fully discrete."""
+
+    model_config = ConfigDict(frozen=True)
 
     action_type: ActionType = Field(..., description="Action type")
     target_id: str = Field(..., description="Alert ID, event ID, or service name")

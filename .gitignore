@@ -207,7 +207,4 @@ __marimo__/
 
 # Reference materials (not part of OnCallEnv)
 /reasoning_gym_env/
-/deployement_tutorial.md
-/environment_tutorial.md
-/scaling_tutorial.md
-/training_tutorial.md
+/tutorials/

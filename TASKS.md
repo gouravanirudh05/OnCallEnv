@@ -9,7 +9,7 @@
 ## Models
 - [x] Define all Enums for action types, severities, labels
 - [x] Define Pydantic models for Observation, Action, Reward
-- [ ] Validate models are frozen, typed, and serialisable
+- [x] Validate models are frozen, typed, and serialisable
 - [ ] Update `CLAUDE.md` project layout with files created
 
 ## Data
@@ -27,15 +27,15 @@
 
 ## Reward
 - [x] Implement per-step dense reward function
-- [ ] Ensure reward varies meaningfully across trajectory
-- [ ] Penalise idle steps and repeated invalid actions
+- [x] Ensure reward varies meaningfully across trajectory
+- [x] Penalise idle steps and repeated invalid actions
 
 ## Tasks and graders
 - [x] Implement Task 1 + grader (severity classification)
 - [x] Implement Task 2 + grader (alert storm deduplication)
 - [x] Implement Task 3 + grader (timeline labelling)
 - [x] Verify all graders are deterministic, pure Python, return float in [0,1]
-- [ ] Verify grader scores vary — not trivially 0 or 1 always
+- [x] Verify grader scores vary — not trivially 0 or 1 always
 
 ## Spec compliance
 - [ ] Create `openenv.yaml` with all required metadata

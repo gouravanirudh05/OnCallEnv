@@ -59,6 +59,12 @@ oncall-env/
 ├── data/scenarios/dns_misconfig.yaml
 ├── tasks/                # task-specific helpers
 ├── tests/                # unit tests
+├── tutorials/            # reference tutorials (not part of env)
+├── tutorials/Hackathon_Instructions.md
+├── tutorials/deployement_tutorial.md
+├── tutorials/environment_tutorial.md
+├── tutorials/scaling_tutorial.md
+├── tutorials/training_tutorial.md
 ├── tests/conftest.py      # pytest config for local imports
 ├── tests/test_task1_generator.py
 ├── tests/test_task1_grader.py
@@ -179,7 +185,7 @@ Follow `TASKS.md` as the execution checklist. At minimum:
 - Unit tests for models, generator determinism, graders, and reward shaping.
 - Graders must be deterministic and return scores in [0.0, 1.0].
 - `openenv validate` must pass before any task is considered done.
-- `inference.py` must emit exact stdout format required in `Hackathon_Instructions.md`.
+ - `inference.py` must emit exact stdout format required in `tutorials/Hackathon_Instructions.md`.
 - Baseline uses fixed seeds and runs under 20 minutes on 2 vCPU / 8 GB RAM.
 
 ---

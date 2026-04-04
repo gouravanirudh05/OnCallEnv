@@ -34,6 +34,7 @@ class OnCallEnv:
         if not valid:
             info["valid"] = False
             info["error"] = error
+            self._state.invalid_actions += 1
 
         reward = compute_reward(self._state, action, valid)
         if valid:

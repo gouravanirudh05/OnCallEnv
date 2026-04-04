@@ -9,7 +9,7 @@ def test_task3_grader_scores_labels():
         state.labelled_events[event_id] = label
 
     score = _grade_task3(state)
-    assert score > 0.5
+    assert 0.8 <= score <= 1.0
 
 
 def test_task3_investigation_usage():

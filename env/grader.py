@@ -128,7 +128,7 @@ def _grade_task3(state: EpisodeState) -> float:
         else:
             score -= 0.05
 
-    return max(0.0, min(1.0, score))
+    return _task3_normalized(score, labels)
 
 
 def _safe_ratio(correct: int, total: int) -> float:
@@ -175,3 +175,14 @@ def _task3_mislabel_penalty(true_label: str, predicted: str) -> float:
     if true_label == "noise" and predicted == "symptom":
         return -0.05
     return -0.03
+
+
+def _task3_normalized(raw_score: float, labels: Dict[str, str]) -> float:
+    if not labels:
+        return 0.0
+    max_possible = sum(_task3_correct_score(label) for label in labels.values())
+    min_possible = -0.15 * len(labels)
+    if max_possible == min_possible:
+        return 0.0
+    normalized = (raw_score - min_possible) / (max_possible - min_possible)
+    return max(0.0, min(1.0, normalized))
