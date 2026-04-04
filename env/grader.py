@@ -80,10 +80,9 @@ def _grade_task2(state: EpisodeState) -> float:
     escalation_score = 0.0
     if escalation:
         predicted = state.escalation or {}
-        if (
-            predicted.get("team") == escalation.get("team")
-            and predicted.get("severity") == escalation.get("severity")
-        ):
+        if predicted.get("team") == escalation.get("team") and predicted.get(
+            "severity"
+        ) == escalation.get("severity"):
             escalation_score = 0.20
 
     penalty = 0.0

@@ -29,26 +29,32 @@ script is wired. Mirror its patterns. Do not reinvent them.
 ```
 oncall-env/
 ├── reasoning_gym_env/   # reference implementation — read before building
-├── CLAUDE.md            # this file
+├── INSTRUCTIONS.md      # agent instructions and project layout
 ├── DECISIONS.md         # engineering choices and why (you create this)
 ├── CHANGELOG.md         # one line per meaningful change (you create this)
 ├── README.md            # user-facing docs (you create and maintain this)
 ├── openenv.yaml         # OpenEnv metadata (you create this)
-├── Dockerfile           # must build and run cleanly (you create this)
+├── server/Dockerfile     # must build and run cleanly (you create this)
 ├── inference.py         # baseline script, OpenAI API (you create this)
+├── pyproject.toml        # dependency manifest
+├── uv.lock               # dependency lockfile for uv
+├── server/               # OpenEnv FastAPI server
+├── server/__init__.py
+├── server/app.py
+├── server/oncall_environment.py
 ├── CONTEXT.md            # session handoff log (update every session)
 ├── env/                  # environment core modules
-├── env/__init__.py        # env package exports
-├── env/env.py             # core reset/step/state loop
-├── env/generator.py       # deterministic episode generation
-├── env/grader.py          # task scoring logic
-├── env/models.py          # Pydantic action/observation models
-├── env/reward.py          # dense reward shaping
-├── env/types.py           # internal episode state types
-├── data/                 # static YAML data
+├── env/__init__.py         # env package exports
+├── env/env.py              # core reset/step/state loop
+├── env/generator.py        # deterministic episode generation
+├── env/grader.py           # task scoring logic
+├── env/models.py           # Pydantic action/observation models
+├── env/reward.py           # dense reward shaping
+├── env/types.py            # internal episode state types
+├── data/                  # static YAML data
 ├── data/service_graph.yaml # service dependency graph
 ├── data/alert_templates.yaml # alert template definitions
-├── data/scenarios/       # scenario templates (8 total)
+├── data/scenarios/        # scenario templates (8 total)
 ├── data/scenarios/bad_deploy.yaml
 ├── data/scenarios/db_failover.yaml
 ├── data/scenarios/traffic_spike.yaml
@@ -57,15 +63,16 @@ oncall-env/
 ├── data/scenarios/config_change.yaml
 ├── data/scenarios/memory_leak.yaml
 ├── data/scenarios/dns_misconfig.yaml
-├── tasks/                # task-specific helpers
-├── tests/                # unit tests
-├── tutorials/            # reference tutorials (not part of env)
+├── tasks/                 # task-specific helpers
+├── inference.py           # baseline inference script
+├── tests/                 # unit tests
+├── tutorials/             # reference tutorials (not part of env)
 ├── tutorials/Hackathon_Instructions.md
 ├── tutorials/deployement_tutorial.md
 ├── tutorials/environment_tutorial.md
 ├── tutorials/scaling_tutorial.md
 ├── tutorials/training_tutorial.md
-├── tests/conftest.py      # pytest config for local imports
+├── tests/conftest.py       # pytest config for local imports
 ├── tests/test_task1_generator.py
 ├── tests/test_task1_grader.py
 ├── tests/test_task2_generator.py
@@ -292,6 +299,10 @@ Keep accurate to what is actually built — do not copy from this file verbatim.
 
 **openenv.yaml** — name, version, tasks[], action_space, observation_space,
 reward_type, reproducible: true, real_world_domain.
+
+**pyproject.toml** — dependencies and server entry point.
+
+**uv.lock** — lockfile for uv-based installs.
 
 ---
 

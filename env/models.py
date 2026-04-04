@@ -13,6 +13,7 @@ try:
     from openenv.core.env_server.types import Action as OpenEnvAction
     from openenv.core.env_server.types import Observation as OpenEnvObservation
 except ImportError:  # pragma: no cover
+
     class OpenEnvAction(BaseModel):
         """Fallback Action base when openenv is unavailable."""
 
@@ -61,7 +62,9 @@ class ServiceNode(FrozenBaseModel):
         default_factory=list, description="Upstream dependencies"
     )
     team: str = Field(..., description="Owning team")
-    tier: int = Field(..., description="Service tier (1=user-facing, 2=internal, 3=infra)")
+    tier: int = Field(
+        ..., description="Service tier (1=user-facing, 2=internal, 3=infra)"
+    )
 
 
 class ActionType(str, Enum):
@@ -118,6 +121,10 @@ class Observation(OpenEnvObservation):
     context: Dict[str, str] = Field(
         default_factory=dict, description="Scenario metadata"
     )
+    done: bool = Field(default=False, description="Whether the episode is done")
+    reward: Optional[float] = Field(
+        default=None, description="Reward returned by the last step"
+    )
 
 
 class Action(OpenEnvAction):
@@ -133,9 +140,10 @@ class Action(OpenEnvAction):
     event_label: Optional[EventLabel] = Field(
         default=None, description="Label for LABEL_EVENT"
     )
-    team: Optional[str] = Field(
-        default=None, description="Team name for ESCALATE"
-    )
+    team: Optional[str] = Field(default=None, description="Team name for ESCALATE")
     remediation: Optional[RemediationAction] = Field(
         default=None, description="Remediation action for REMEDIATE"
+    )
+    investigation_id: Optional[str] = Field(
+        default=None, description="Investigation ID for INVESTIGATE"
     )

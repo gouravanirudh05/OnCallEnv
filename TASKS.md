@@ -3,7 +3,7 @@
 ## Setup
 - [x] Read `reasoning_gym_env/` fully before writing any code
 - [x] Scaffold project structure, create directories
-- [ ] Set up `pyproject.toml` or `requirements.txt` with dependencies
+- [x] Set up `pyproject.toml` or `requirements.txt` with dependencies
 - [x] Create `CHANGELOG.md` and `DECISIONS.md`
 
 ## Models
@@ -38,14 +38,14 @@
 - [x] Verify grader scores vary — not trivially 0 or 1 always
 
 ## Spec compliance
-- [ ] Create `openenv.yaml` with all required metadata
+- [x] Create `openenv.yaml` with all required metadata
 - [ ] Run `openenv validate` — fix until it passes
-- [ ] Confirm `reset()` / `step()` / `state()` signatures match spec exactly
+- [x] Confirm `reset()` / `step()` / `state()` signatures match spec exactly
 
 ## Inference script
-- [ ] Implement `inference.py` in repo root
-- [ ] Use OpenAI client, read all credentials from env vars
-- [ ] Emit exact `[START]` `[STEP]` `[END]` stdout format
+- [x] Implement `inference.py` in repo root
+- [x] Use OpenAI client, read all credentials from env vars
+- [x] Emit exact `[START]` `[STEP]` `[END]` stdout format
 - [ ] Run all 3 tasks with fixed seeds, produce reproducible scores
 - [ ] Confirm runtime under 20 min on 2 vCPU / 8 GB
 
@@ -60,6 +60,6 @@
 - [ ] Run pre-submission checklist from `HACKATHON.md`
 
 ## Documentation
-- [ ] Write `README.md` — env description, obs/action spaces, tasks, setup, baseline scores
+- [x] Write `README.md` — env description, obs/action spaces, tasks, setup, baseline scores
 - [ ] Fill actual baseline scores into README after running inference
 - [ ] Update `CLAUDE.md` project layout section to reflect final file structure

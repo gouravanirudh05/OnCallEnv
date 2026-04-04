@@ -29,6 +29,11 @@ Agents and graders need to distinguish invalid actions from valid-but-low-reward
 `info["valid"]` carries this signal. Without it, an agent cannot tell if it did
 something wrong or just something unhelpful.
 
+## Server wrapper uses OpenEnv HTTP server
+Added `server/` with a minimal wrapper to expose `OnCallEnv` via OpenEnv's FastAPI server.
+The core env remains local-only and deterministic; the wrapper only adapts reset/step/state
+to the OpenEnv HTTP schema to satisfy validation and deployment requirements.
+
 ---
 
 <!-- Add new decisions below as you make them -->

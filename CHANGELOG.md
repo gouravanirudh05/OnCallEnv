@@ -15,3 +15,5 @@
 [2026-04-04] test: add reward shaping tests
 [2026-04-04] test: add model immutability and determinism tests
 [2026-04-04] fix: update generator to respect frozen models
+[2026-04-05] infra: add OpenEnv server, manifest, and dependency metadata
+[2026-04-05] feat: add baseline inference script and README docs

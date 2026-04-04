@@ -34,6 +34,8 @@ def test_observation_serialization_roundtrip():
         active_incidents=[],
         budget_remaining=10,
         context={"task": "severity_classification"},
+        done=False,
+        reward=0.0,
     )
     payload = obs.model_dump()
     restored = Observation(**payload)
