@@ -254,6 +254,7 @@ def _generate_task3(
     }
 
     context["scenario_id"] = scenario["id"]
+    context["event_ids"] = json.dumps([event["id"] for event in scenario["events"]])
 
     logs = []
     alerts = []
@@ -415,9 +416,7 @@ def _services_with_downstream(service_graph: List[ServiceNode]) -> List[ServiceN
         for dependency in service.depends_on:
             if dependency in dependents:
                 dependents[dependency] += 1
-    return [
-        service for service in service_graph if dependents.get(service.name, 0) > 0
-    ]
+    return [service for service in service_graph if dependents.get(service.name, 0) > 0]
 
 
 def _load_yaml(path: Path) -> Dict[str, object]:

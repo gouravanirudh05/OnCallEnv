@@ -208,3 +208,6 @@ __marimo__/
 # Reference materials (not part of OnCallEnv)
 /reasoning_gym_env/
 /tutorials/
+
+# Session notes
+session-*.md
