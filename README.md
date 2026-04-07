@@ -1,3 +1,11 @@
+---
+title: OnCallEnv
+sdk: docker
+app_port: 8000
+tags:
+  - openenv
+---
+
 # OnCallEnv
 
 OnCallEnv is an OpenEnv environment for on call incident response. Agents see alerts, logs, and service topology. They must classify severity, reduce alert storms, and label incident timelines.
@@ -74,6 +82,8 @@ uv run uvicorn server.app:app --host 0.0.0.0 --port 8000
 docker build -t oncall-env -f server/Dockerfile .
 docker run -p 8000:8000 oncall-env
 ```
+
+For a Hugging Face Docker Space, use the repository `README.md` metadata above and deploy the container with the `openenv` tag.
 
 ## OpenEnv validation
 
