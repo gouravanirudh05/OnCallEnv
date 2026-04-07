@@ -140,6 +140,13 @@ class OnCallEnv:
         if action.action_type == ActionType.INVESTIGATE:
             if action.investigation_id:
                 used = self._state.ground_truth.setdefault("investigations_used", [])
+                used_ids = {
+                    str(item.get("id"))
+                    for item in used
+                    if isinstance(item, dict) and item.get("id")
+                }
+                if action.investigation_id in used_ids:
+                    return
                 investigations = self._state.ground_truth.get("investigations", [])
                 valid_ids = {
                     str(item.get("id"))

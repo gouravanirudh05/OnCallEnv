@@ -121,7 +121,13 @@ def _grade_task3(state: EpisodeState) -> float:
         score += _task3_mislabel_penalty(true_label, predicted)
 
     investigate_actions = state.ground_truth.get("investigations_used", [])
+    seen_ids = set()
     for investigation in investigate_actions:
+        investigation_id = investigation.get("id")
+        if investigation_id and investigation_id in seen_ids:
+            continue
+        if investigation_id:
+            seen_ids.add(investigation_id)
         if investigation.get("helpful"):
             score += 0.10
         else:

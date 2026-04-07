@@ -55,20 +55,23 @@ def compute_reward(state: EpisodeState, action: Action, valid: bool) -> float:
 
     if action.action_type == ActionType.INVESTIGATE:
         investigations = state.ground_truth.get("investigations", [])
-        used = state.ground_truth.setdefault("investigations_used", [])
+        used = state.ground_truth.get("investigations_used", [])
+        used_ids = {
+            str(item.get("id"))
+            for item in used
+            if isinstance(item, dict) and item.get("id")
+        }
         if action.investigation_id:
             valid_ids = {
                 str(item.get("id"))
                 for item in investigations
                 if isinstance(item, dict) and item.get("id")
             }
-            helpful = action.investigation_id in valid_ids
-            used.append({"id": action.investigation_id, "helpful": helpful})
-            return 0.10 if helpful else -0.05
+            if action.investigation_id in used_ids:
+                return -0.05
+            return 0.10 if action.investigation_id in valid_ids else -0.05
         if len(used) >= len(investigations):
-            used.append({"helpful": False})
             return -0.05
-        used.append({"helpful": True})
         return 0.10
 
     return 0.01
