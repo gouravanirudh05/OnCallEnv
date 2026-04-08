@@ -500,10 +500,26 @@ def run_episode(task_id: int, seed: int, client: Any, model: str) -> EpisodeResu
             metadata = _task_metadata(env, observation)
             prompt = _build_prompt(observation, metadata, prev_reward)
 
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt,
-            )
+            # response = client.models.generate_content(
+            #     model=model,
+            #     contents=prompt,
+            # )
+            import time
+
+            for attempt in range(5):
+                try:
+                    response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+        )
+                    break
+                except Exception as e:
+                    if "429" in str(e):
+                        wait_time = 25  # safe buffer > retryDelay
+                        print(f"[RATE LIMIT] sleeping {wait_time}s...")
+                        time.sleep(wait_time)
+                    else:
+                        raise
 
             content = response.text or ""
             print("RAW LLM OUTPUT:", content)
