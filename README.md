@@ -256,11 +256,11 @@ Expected output shape:
 
 Baseline note: The baseline is reproducible with respect to task seeds, but exact model outputs can still vary across API runs and model versions.
 
-Baseline scores (Qwen/Qwen2.5-72B-Instruct via HF router):
+Baseline scores (Qwen/Qwen2.5-72B-Instruct via HF router, 3-seed mean):
 
-* Task 1 (severity_classification): 0.36
-* Task 2 (alert_storm): 0.00
-* Task 3 (timeline_labelling): 0.64
+* Task 1 (severity_classification): 0.38 (seeds 42/43/44: 0.36, 0.36, 0.43)
+* Task 2 (alert_storm): 0.00 (seeds 123/124/125: 0.00, 0.00, 0.00)
+* Task 3 (timeline_labelling): 0.62 (seeds 7/8/9: 0.64, 0.57, 0.65)
 
 ## Local setup
 

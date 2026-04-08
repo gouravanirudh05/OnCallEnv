@@ -133,19 +133,23 @@ if ! command -v docker &>/dev/null; then
   stop_at "Step 2"
 fi
 
+DOCKERFILE=""
+DOCKER_CONTEXT=""
 if [ -f "$REPO_DIR/Dockerfile" ]; then
+  DOCKERFILE="$REPO_DIR/Dockerfile"
   DOCKER_CONTEXT="$REPO_DIR"
 elif [ -f "$REPO_DIR/server/Dockerfile" ]; then
-  DOCKER_CONTEXT="$REPO_DIR/server"
+  DOCKERFILE="$REPO_DIR/server/Dockerfile"
+  DOCKER_CONTEXT="$REPO_DIR"
 else
   fail "No Dockerfile found in repo root or server/ directory"
   stop_at "Step 2"
 fi
 
-log "  Found Dockerfile in $DOCKER_CONTEXT"
+log "  Found Dockerfile at $DOCKERFILE"
 
 BUILD_OK=false
-BUILD_OUTPUT=$(run_with_timeout "$DOCKER_BUILD_TIMEOUT" docker build "$DOCKER_CONTEXT" 2>&1) && BUILD_OK=true
+BUILD_OUTPUT=$(run_with_timeout "$DOCKER_BUILD_TIMEOUT" docker build -f "$DOCKERFILE" "$DOCKER_CONTEXT" 2>&1) && BUILD_OK=true
 
 if [ "$BUILD_OK" = true ]; then
   pass "Docker build succeeded"
