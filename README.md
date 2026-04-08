@@ -1,3 +1,10 @@
+---
+title: OnCallEnv
+tags:
+  - openenv
+sdk: docker
+---
+
 # OnCallEnv
 
 OnCallEnv is an OpenEnv-compatible reinforcement learning environment for on-call incident response. It simulates a real operational workflow that human SREs and platform engineers actually perform: interpreting alerts, tracing cascades through a service graph, suppressing false positives, escalating to the right team, and reconstructing incident timelines from noisy evidence.
@@ -29,7 +36,7 @@ Agents operate over structured production-like artifacts:
 * Hugging Face Spaces deployment path: yes, repo metadata + Dockerfile in [`server/Dockerfile`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/server/Dockerfile)
 * README with environment, spaces, setup, and usage: yes
 
-Hackathon note: The baseline inference path uses the OpenAI API client with `OPENAI_API_KEY`, and [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py) is documented here in the required hackathon format.
+Hackathon note: The baseline inference path uses the OpenAI API client with `API_BASE_URL`, `MODEL_NAME`, `HF_TOKEN`, and `LOCAL_IMAGE_NAME`, and [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py) is documented here in the required hackathon format.
 
 ## Environment overview
 
@@ -214,15 +221,17 @@ This makes task construction reproducible, even when model outputs vary across p
 The repository includes a baseline agent loop in [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py). It:
 
 * runs the three tasks with fixed seeds
-* prints `[START]`, `[STEP]`, `[INFO]`, and `[END]` lines
-* parses raw JSON model output
-* applies task-aware fallback behavior
-* coerces repetitive low-value actions into the next useful valid action
+* prints `[START]`, `[STEP]`, and `[END]` lines only
+* uses the OpenAI client against the configured `API_BASE_URL`
+* runs each task for a fixed seed and emits a `[0,1]` score per task
 
 Target hackathon usage:
 
 ```bash
-export OPENAI_API_KEY=your_key_here
+export HF_TOKEN=your_key_here
+export API_BASE_URL=https://router.huggingface.co/v1
+export MODEL_NAME=Qwen/Qwen2.5-72B-Instruct
+export LOCAL_IMAGE_NAME=
 python3 inference.py
 ```
 
@@ -230,19 +239,28 @@ If you are using `uv`:
 
 ```bash
 uv sync
-export OPENAI_API_KEY=your_key_here
+export HF_TOKEN=your_key_here
+export API_BASE_URL=https://router.huggingface.co/v1
+export MODEL_NAME=Qwen/Qwen2.5-72B-Instruct
+export LOCAL_IMAGE_NAME=
 uv run python inference.py
 ```
 
 Expected output shape:
 
 ```text
-[START] task=severity_classification env=oncall-env model=...
-[STEP]  step=1 action=... reward=... done=false error=null
-[END]   success=true steps=... episode_return=... final_reward=... error=null rewards=...
+[START] task=severity_classification env=oncall-env model=Qwen/Qwen2.5-72B-Instruct
+[STEP]  step=1 action={"action_type":"classify_alert","severity":"P2","target_id":"alert-0"} reward=0.00 done=false error=null
+[END]   success=true steps=3 score=0.42 rewards=0.00,0.05,0.37
 ```
 
 Baseline note: The baseline is reproducible with respect to task seeds, but exact model outputs can still vary across API runs and model versions.
+
+Baseline scores (Gemini run from teammate logs; replace after running `inference.py`):
+
+* Task 1 (severity_classification): 1.01
+* Task 2 (alert_storm): 1.65
+* Task 3 (timeline_labelling): 1.23
 
 ## Local setup
 
