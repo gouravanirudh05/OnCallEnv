@@ -325,5 +325,29 @@ Hugging Face Spaces deployment:
 ## Repository structure
 
 ```text
-env/  env.py              Core reset/step/state loop  generator.py        Deterministic episode generation  grader.py           Final task scoring  models.py           Typed Pydantic observation/action models  reward.py           Dense reward shaping  types.py            Internal episode statedata/  service_graph.yaml  alert_templates.yaml  scenarios/*.yamlserver/  app.py              FastAPI/OpenEnv app  oncall_environment.py  Dockerfiletests/  unit tests and lifecycle coverageinference.py          Baseline agent loopopenenv.yaml          OpenEnv metadata
+.
+├── env/
+│   ├── env.py                # Core reset/step/state loop
+│   ├── generator.py          # Deterministic episode generation
+│   ├── grader.py             # Final task scoring
+│   ├── models.py             # Typed Pydantic observation/action models
+│   ├── reward.py             # Dense reward shaping
+│   └── types.py              # Internal episode state
+│
+├── data/
+│   ├── service_graph.yaml
+│   ├── alert_templates.yaml
+│   └── scenarios/
+│       └── *.yaml
+│
+├── server/
+│   ├── app.py                # FastAPI/OpenEnv app
+│   ├── oncall_environment.py
+│   └── Dockerfile
+│
+├── tests/
+│   └── ...                   # Unit tests and lifecycle coverage
+│
+├── inference.py              # Baseline agent loop
+└── openenv.yaml              # OpenEnv metadata
 ```
