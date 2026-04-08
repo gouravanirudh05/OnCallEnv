@@ -1,4 +1,4 @@
-"""Final improved inference script for OnCallEnv (OpenAI-compatible client version)."""
+"""Final improved inference script for OnCallEnv (Gemini version)."""
 
 from __future__ import annotations
 
@@ -12,14 +12,13 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import yaml
-from openai import OpenAI
 
 from env.env import OnCallEnv
 from env.models import Action, ActionType, EventLabel, Severity
 
 try:
     from dotenv import load_dotenv
-except ImportError:
+except ImportError:  # pragma: no cover
     load_dotenv = None
 
 if load_dotenv is not None:
@@ -27,10 +26,7 @@ if load_dotenv is not None:
 
 
 DEFAULT_SEEDS = {1: 42, 2: 123, 3: 7}
-API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
-MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
-BENCHMARK = os.getenv("BENCHMARK", "oncall-env")
+DEFAULT_MODEL = "gemini-3.1-flash-lite-preview"
 SCENARIO_DIR = Path(__file__).resolve().parent / "data" / "scenarios"
 
 
@@ -65,13 +61,17 @@ def _render_action(action: Action) -> str:
 
 
 def _log_start(task_name: str, model: str) -> None:
-    print(f"[START] task={task_name} env={BENCHMARK} model={model}", flush=True)
+    print(f"[START] task={task_name} env=oncall-env model={model}")
 
 
 def _log_step(step: int, action: Action, reward: float, done: bool, error: Optional[str]) -> None:
     print(
-        f"[STEP] step={step} action={_render_action(action)} reward={_format_reward(reward)} done={_format_bool(done)} error={error or 'null'}",
-        flush=True,
+        "[STEP]  "
+        f"step={step} "
+        f"action={_render_action(action)} "
+        f"reward={_format_reward(reward)} "
+        f"done={_format_bool(done)} "
+        f"error={error or 'null'}"
     )
 
 
@@ -80,17 +80,20 @@ def _log_action_adjustment(original: Action, adjusted: Action, reason: str) -> N
         "[INFO]  "
         f"action_adjusted reason={reason} "
         f"from={_render_action(original)} "
-        f"to={_render_action(adjusted)}",
-        flush=True,
+        f"to={_render_action(adjusted)}"
     )
 
 
 def _log_end(result: EpisodeResult) -> None:
     rewards_str = ",".join(_format_reward(val) for val in result.rewards)
-    score = result.final_reward
     print(
-        f"[END] success={_format_bool(result.error is None)} steps={len(result.rewards)} score={score:.2f} rewards={rewards_str}",
-        flush=True,
+        "[END]   "
+        f"success={_format_bool(result.error is None)} "
+        f"steps={len(result.rewards)} "
+        f"episode_return={result.episode_return:.3f} "
+        f"final_reward={result.final_reward:.3f} "
+        f"error={result.error or 'null'} "
+        f"rewards={rewards_str}"
     )
 
 
@@ -346,6 +349,7 @@ def _extract_first_json_object(raw: str) -> str:
 
 def _parse_action(raw: str, metadata: Dict[str, Any]) -> Action:
     raw = raw.strip()
+
     raw = re.sub(r"```json|```", "", raw)
 
     try:
@@ -507,6 +511,8 @@ def _fallback_action(observation, metadata: Dict[str, Any]) -> Action:
 def _coerce_action_for_progress(
     action: Action, observation, metadata: Dict[str, Any]
 ) -> Action:
+    """Redirect repeated actions toward unfinished work to avoid budget-burning loops."""
+
     if action.action_type == ActionType.CLASSIFY_ALERT:
         remaining = metadata["unclassified_alert_ids"]
         if remaining and action.target_id not in remaining:
@@ -552,29 +558,7 @@ def _coerce_action_for_progress(
     return action
 
 
-def _call_llm(client: OpenAI, prompt: str) -> str:
-    import time
-    for attempt in range(5):
-        try:
-            completion = client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=1000,
-                stream=False,
-            )
-            return (completion.choices[0].message.content or "").strip()
-        except Exception as e:
-            if "429" in str(e):
-                wait_time = 25
-                print(f"[RATE LIMIT] sleeping {wait_time}s...", flush=True)
-                time.sleep(wait_time)
-            else:
-                raise
-    return ""
-
-
-def run_episode(task_id: int, seed: int, client: OpenAI, model: str) -> EpisodeResult:
+def run_episode(task_id: int, seed: int, client: Any, model: str) -> EpisodeResult:
     env = OnCallEnv()
     observation = env.reset(task_id=task_id, seed=seed)
     task_name = observation.context.get("task", f"task-{task_id}")
@@ -593,8 +577,29 @@ def run_episode(task_id: int, seed: int, client: OpenAI, model: str) -> EpisodeR
             metadata = _task_metadata(env, observation)
             prompt = _build_prompt(observation, metadata, prev_reward)
 
-            content = _call_llm(client, prompt)
-            print(f"RAW LLM OUTPUT: {content}", flush=True)
+            # response = client.models.generate_content(
+            #     model=model,
+            #     contents=prompt,
+            # )
+            import time
+
+            for attempt in range(5):
+                try:
+                    response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+        )
+                    break
+                except Exception as e:
+                    if "429" in str(e):
+                        wait_time = 25  # safe buffer > retryDelay
+                        print(f"[RATE LIMIT] sleeping {wait_time}s...")
+                        time.sleep(wait_time)
+                    else:
+                        raise
+
+            content = response.text or ""
+            print("RAW LLM OUTPUT:", content)
 
             try:
                 proposed_action = _parse_action(content, metadata)
@@ -633,7 +638,7 @@ def run_episode(task_id: int, seed: int, client: OpenAI, model: str) -> EpisodeR
 
     except Exception as exc:
         error = str(exc)
-        print("EPISODE ERROR:", flush=True)
+        print("EPISODE ERROR:")
         traceback.print_exc()
 
     result = EpisodeResult(task_id=task_id, rewards=rewards, done=done, error=error)
@@ -642,10 +647,25 @@ def run_episode(task_id: int, seed: int, client: OpenAI, model: str) -> EpisodeR
 
 
 def main() -> int:
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+    try:
+        from google import genai
+    except ImportError:
+        print(
+            "google-genai is required to run inference. Install dependencies with `uv sync`.",
+            file=sys.stderr,
+        )
+        return 1
+
+    api_key = os.getenv("GEMINI_API_KEY")
+
+    if not api_key:
+        print("GEMINI_API_KEY is required", file=sys.stderr)
+        return 1
+
+    client = genai.Client(api_key=api_key)
 
     for task_id, seed in DEFAULT_SEEDS.items():
-        run_episode(task_id=task_id, seed=seed, client=client, model=MODEL_NAME)
+        run_episode(task_id=task_id, seed=seed, client=client, model=DEFAULT_MODEL)
 
     return 0
 
