@@ -1,12 +1,15 @@
 ---
+
 title: OnCallEnv
 sdk: docker
 app_port: 8000
 tags:
-  - openenv
-  - rl
-  - sre
-  - incident-response
+
+* openenv
+* rl
+* sre
+* incident-response
+
 ---
 
 # OnCallEnv
@@ -19,28 +22,28 @@ The environment ships with three deterministic tasks, typed Pydantic models, den
 
 This project is not a game or toy benchmark. It models realistic incident-management tasks:
 
--   triaging alert severity under ambiguous or misleading monitoring metadata
--   deduplicating alert storms caused by a single upstream failure
--   labeling incident timelines from shuffled alerts, logs, deploys, pages, and diagnostics
+* triaging alert severity under ambiguous or misleading monitoring metadata
+* deduplicating alert storms caused by a single upstream failure
+* labeling incident timelines from shuffled alerts, logs, deploys, pages, and diagnostics
 
 Agents operate over structured production-like artifacts:
 
--   alerts with thresholds, severities, timestamps, labels, and service ownership
--   logs with service and level metadata
--   a service dependency graph with owner teams and tiers
--   scenario metadata and investigation opportunities
+* alerts with thresholds, severities, timestamps, labels, and service ownership
+* logs with service and level metadata
+* a service dependency graph with owner teams and tiers
+* scenario metadata and investigation opportunities
 
 ## Hackathon requirements checklist
 
--   Real-world task simulation: yes, on-call incident response
--   Full OpenEnv interface: yes, typed `Observation` and `Action`, plus `reset()`, `step()`, `state()`, and [`openenv.yaml`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/openenv.yaml)
--   Minimum 3 tasks with agent graders: yes, tasks 1-3 with deterministic graders in [`env/grader.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/grader.py)
--   Meaningful reward shaping: yes, dense per-step reward in [`env/reward.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/reward.py)
--   Baseline inference script with fixed seeds: yes, [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py)
--   Hugging Face Spaces deployment path: yes, repo metadata + Dockerfile in [`server/Dockerfile`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/server/Dockerfile)
--   README with environment, spaces, setup, and usage: yes
+* Real-world task simulation: yes, on-call incident response
+* Full OpenEnv interface: yes, typed `Observation` and `Action`, plus `reset()`, `step()`, `state()`, and [`openenv.yaml`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/openenv.yaml)
+* Minimum 3 tasks with agent graders: yes, tasks 1-3 with deterministic graders in [`env/grader.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/grader.py)
+* Meaningful reward shaping: yes, dense per-step reward in [`env/reward.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/reward.py)
+* Baseline inference script with fixed seeds: yes, [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py)
+* Hugging Face Spaces deployment path: yes, repo metadata + Dockerfile in [`server/Dockerfile`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/server/Dockerfile)
+* README with environment, spaces, setup, and usage: yes
 
-Hackathon note:The baseline inference path uses the OpenAI API client with `OPENAI_API_KEY`, and [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py) is documented here in the required hackathon format.
+Hackathon note: The baseline inference path uses the OpenAI API client with `OPENAI_API_KEY`, and [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py) is documented here in the required hackathon format.
 
 ## Environment overview
 
@@ -49,20 +52,23 @@ The core environment lives in [`env/env.py`](/media/sathish/New%20Volume1/merged
 Public API:
 
 ```python
-class OnCallEnv:    def reset(self, task_id: int, seed: int) -> Observation: ...    def step(self, action: Action) -> tuple[Observation, float, bool, dict]: ...    def state(self) -> dict: ...
+class OnCallEnv:
+    def reset(self, task_id: int, seed: int) -> Observation: ...
+    def step(self, action: Action) -> tuple[Observation, float, bool, dict]: ...
+    def state(self) -> dict: ...
 ```
 
 Step contract:
 
--   `step(action)` returns `(observation, reward, done, info)`
--   `info` includes `valid`, `error`, and `step`
--   `state()` exposes hidden episode state and ground truth for graders, not agents
+* `step(action)` returns `(observation, reward, done, info)`
+* `info` includes `valid`, `error`, and `step`
+* `state()` exposes hidden episode state and ground truth for graders, not agents
 
 Default episode budgets:
 
--   Task 1: 20
--   Task 2: 60
--   Task 3: 40
+* Task 1: 20
+* Task 2: 60
+* Task 3: 40
 
 ## Tasks
 
@@ -74,15 +80,15 @@ The agent receives 5-8 alerts and must classify each alert into `P0`, `P1`, `P2`
 
 Realistic complications:
 
--   two alerts may be correlated and jointly represent a `P0`
--   one alert is time-of-day adjusted and should be treated as lower severity
--   one alert is a known false positive
--   raw monitoring severity can be misleading
+* two alerts may be correlated and jointly represent a `P0`
+* one alert is time-of-day adjusted and should be treated as lower severity
+* one alert is a known false positive
+* raw monitoring severity can be misleading
 
 Generation and grading:
 
--   generated in [`env/generator.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/generator.py)
--   graded in [`env/grader.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/grader.py)
+* generated in [`env/generator.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/generator.py)
+* graded in [`env/grader.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/grader.py)
 
 ### Task 2: Alert Storm Deduplication
 
@@ -90,22 +96,22 @@ Difficulty: medium
 
 The agent sees a root-cause alert, downstream cascade alerts, and unrelated alerts in a service dependency graph. It must:
 
-1.  label the root cause
-2.  label downstream symptoms
-3.  identify false positives and unrelated alerts
-4.  silence false positives
-5.  escalate to the correct owning team with severity `P0`
+1. label the root cause
+2. label downstream symptoms
+3. identify false positives and unrelated alerts
+4. silence false positives
+5. escalate to the correct owning team with severity `P0`
 
 Completion logic now requires all of the above workflow stages:
 
--   all event labels assigned
--   all `false_positive` alerts silenced
--   escalation recorded
+* all event labels assigned
+* all `false_positive` alerts silenced
+* escalation recorded
 
 Generation and grading:
 
--   generated in [`env/generator.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/generator.py)
--   graded in [`env/grader.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/grader.py)
+* generated in [`env/generator.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/generator.py)
+* graded in [`env/grader.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/grader.py)
 
 ### Task 3: Incident Timeline Labelling
 
@@ -115,12 +121,12 @@ The agent reconstructs a shuffled incident timeline from scenario templates such
 
 Event labels include:
 
--   `root_cause`
--   `symptom`
--   `contributing_factor`
--   `noise`
--   `unrelated`
--   `false_positive`
+* `root_cause`
+* `symptom`
+* `contributing_factor`
+* `noise`
+* `unrelated`
+* `false_positive`
 
 The agent can also use `investigate` actions tied to scenario diagnostics. Repeated investigation IDs are penalized.
 
@@ -131,38 +137,54 @@ Scenario templates live in [`data/scenarios/`](/media/sathish/New%20Volume1/merg
 Observation is a typed Pydantic model defined in [`env/models.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/models.py).
 
 ```python
-class Observation(OpenEnvObservation):    step: int    alerts: list[Alert]    logs: list[LogLine]    service_graph: list[ServiceNode]    active_incidents: list[str]    budget_remaining: int    context: dict[str, str]    done: bool    reward: float | None
+class Observation(OpenEnvObservation):
+    step: int
+    alerts: list[Alert]
+    logs: list[LogLine]
+    service_graph: list[ServiceNode]
+    active_incidents: list[str]
+    budget_remaining: int
+    context: dict[str, str]
+    done: bool
+    reward: float | None
 ```
 
 Important sub-models:
 
--   `Alert`: `id`, `service`, `metric`, `value`, `threshold`, `severity_raw`, `timestamp`, `labels`
--   `LogLine`: `timestamp`, `service`, `level`, `message`, `trace_id`
--   `ServiceNode`: `name`, `depends_on`, `team`, `tier`
+* `Alert`: `id`, `service`, `metric`, `value`, `threshold`, `severity_raw`, `timestamp`, `labels`
+* `LogLine`: `timestamp`, `service`, `level`, `message`, `trace_id`
+* `ServiceNode`: `name`, `depends_on`, `team`, `tier`
 
 ## Action space
 
 Action is a typed Pydantic model defined in [`env/models.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/env/models.py).
 
 ```python
-class Action(OpenEnvAction):    action_type: ActionType    target_id: str    severity: Severity | None    event_label: EventLabel | None    team: str | None    remediation: RemediationAction | None    investigation_id: str | None
+class Action(OpenEnvAction):
+    action_type: ActionType
+    target_id: str
+    severity: Severity | None
+    event_label: EventLabel | None
+    team: str | None
+    remediation: RemediationAction | None
+    investigation_id: str | None
 ```
 
 Supported `action_type` values:
 
--   `classify_alert`
--   `label_event`
--   `silence_alert`
--   `escalate`
--   `remediate`
--   `investigate`
--   `hold`
+* `classify_alert`
+* `label_event`
+* `silence_alert`
+* `escalate`
+* `remediate`
+* `investigate`
+* `hold`
 
 Validation behavior:
 
--   invalid actions do not crash the environment
--   invalid actions return a penalty and an `info["error"]` message
--   required fields are enforced for `classify_alert`, `label_event`, `escalate`, and `remediate`
+* invalid actions do not crash the environment
+* invalid actions return a penalty and an `info["error"]` message
+* required fields are enforced for `classify_alert`, `label_event`, `escalate`, and `remediate`
 
 ## Reward design
 
@@ -170,22 +192,22 @@ Dense reward shaping is implemented in [`env/reward.py`](/media/sathish/New%20Vo
 
 Trajectory-level reward signals include:
 
--   positive reward for correct severity classification
--   penalties for important misclassifications such as missing a `P0`
--   positive reward for correct event labels
--   positive reward for silencing actual false positives
--   penalty for silencing critical alerts
--   positive reward for correct escalation team and severity
--   positive reward for helpful one-time investigations
--   penalty for repeated or unhelpful investigations
--   penalty for invalid actions
--   penalty for `hold`
+* positive reward for correct severity classification
+* penalties for important misclassifications such as missing a `P0`
+* positive reward for correct event labels
+* positive reward for silencing actual false positives
+* penalty for silencing critical alerts
+* positive reward for correct escalation team and severity
+* positive reward for helpful one-time investigations
+* penalty for repeated or unhelpful investigations
+* penalty for invalid actions
+* penalty for `hold`
 
 Episode bonuses include:
 
--   efficiency bonus for solving within 60% of the available budget
--   task-2 bonus for silencing all false positives
--   task-2 bonus for correctly identifying the root-cause alert
+* efficiency bonus for solving within 60% of the available budget
+* task-2 bonus for silencing all false positives
+* task-2 bonus for correctly identifying the root-cause alert
 
 All final graders return values in `[0.0, 1.0]`.
 
@@ -195,9 +217,9 @@ Episode generation is deterministic for a fixed `(task_id, seed)` pair. Template
 
 Default baseline seeds in [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py):
 
--   Task 1: `42`
--   Task 2: `123`
--   Task 3: `7`
+* Task 1: `42`
+* Task 2: `123`
+* Task 3: `7`
 
 This makes task construction reproducible, even when model outputs vary across providers or timestamps.
 
@@ -205,31 +227,36 @@ This makes task construction reproducible, even when model outputs vary across p
 
 The repository includes a baseline agent loop in [`inference.py`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/inference.py). It:
 
--   runs the three tasks with fixed seeds
--   prints `[START]`, `[STEP]`, `[INFO]`, and `[END]` lines
--   parses raw JSON model output
--   applies task-aware fallback behavior
--   coerces repetitive low-value actions into the next useful valid action
+* runs the three tasks with fixed seeds
+* prints `[START]`, `[STEP]`, `[INFO]`, and `[END]` lines
+* parses raw JSON model output
+* applies task-aware fallback behavior
+* coerces repetitive low-value actions into the next useful valid action
 
 Target hackathon usage:
 
 ```bash
-export OPENAI_API_KEY=your_key_herepython3 inference.py
+export OPENAI_API_KEY=your_key_here
+python3 inference.py
 ```
 
 If you are using `uv`:
 
 ```bash
-uv syncexport OPENAI_API_KEY=your_key_hereuv run python inference.py
+uv sync
+export OPENAI_API_KEY=your_key_here
+uv run python inference.py
 ```
 
 Expected output shape:
 
 ```text
-[START] task=severity_classification env=oncall-env model=...[STEP]  step=1 action=... reward=... done=false error=null[END]   success=true steps=... episode_return=... final_reward=... error=null rewards=...
+[START] task=severity_classification env=oncall-env model=...
+[STEP]  step=1 action=... reward=... done=false error=null
+[END]   success=true steps=... episode_return=... final_reward=... error=null rewards=...
 ```
 
-Baseline note:The baseline is reproducible with respect to task seeds, but exact model outputs can still vary across API runs and model versions.
+Baseline note: The baseline is reproducible with respect to task seeds, but exact model outputs can still vary across API runs and model versions.
 
 ## Local setup
 
@@ -242,13 +269,28 @@ uv sync
 ### Using pip
 
 ```bash
-python3 -m venv .venvsource .venv/bin/activatepip install -e ".[dev]"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
 ```
 
 ## Quick usage example
 
 ```python
-from env.env import OnCallEnvfrom env.models import Action, ActionType, Severityenv = OnCallEnv()obs = env.reset(task_id=1, seed=42)action = Action(    action_type=ActionType.CLASSIFY_ALERT,    target_id=obs.alerts[0].id,    severity=Severity.P2,)obs, reward, done, info = env.step(action)print(reward, done, info)
+from env.env import OnCallEnv
+from env.models import Action, ActionType, Severity
+
+env = OnCallEnv()
+obs = env.reset(task_id=1, seed=42)
+
+action = Action(
+    action_type=ActionType.CLASSIFY_ALERT,
+    target_id=obs.alerts[0].id,
+    severity=Severity.P2,
+)
+
+obs, reward, done, info = env.step(action)
+print(reward, done, info)
 ```
 
 ## OpenEnv server
@@ -278,7 +320,8 @@ uv run openenv validate
 Validate the running server:
 
 ```bash
-uv run uvicorn server.app:app --host 127.0.0.1 --port 8000uv run openenv validate --url http://127.0.0.1:8000
+uv run uvicorn server.app:app --host 127.0.0.1 --port 8000
+uv run openenv validate --url http://127.0.0.1:8000
 ```
 
 ## Tests
@@ -286,17 +329,18 @@ uv run uvicorn server.app:app --host 127.0.0.1 --port 8000uv run openenv validat
 Install dev dependencies first, then run:
 
 ```bash
-uv sync --extra devuv run python -m pytest
+uv sync --extra dev
+uv run python -m pytest
 ```
 
 The repo includes tests for:
 
--   model schema and serialization
--   generator determinism and data integrity
--   grader behavior across the three tasks
--   reward shaping
--   environment lifecycle and action validation
--   server wrapper behavior
+* model schema and serialization
+* generator determinism and data integrity
+* grader behavior across the three tasks
+* reward shaping
+* environment lifecycle and action validation
+* server wrapper behavior
 
 ## Docker and Hugging Face Spaces
 
@@ -316,11 +360,11 @@ docker run --rm -p 8000:8000 oncall-env
 
 Hugging Face Spaces deployment:
 
-1.  Create a new Docker Space.
-2.  Push this repository as-is.
-3.  Ensure the repository root contains this README frontmatter and [`openenv.yaml`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/openenv.yaml).
-4.  Spaces will build the container from [`server/Dockerfile`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/server/Dockerfile).
-5.  The app serves on port `8000`.
+1. Create a new Docker Space.
+2. Push this repository as-is.
+3. Ensure the repository root contains this README frontmatter and [`openenv.yaml`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/openenv.yaml).
+4. Spaces will build the container from [`server/Dockerfile`](/media/sathish/New%20Volume1/merged_partition_content/Meta-env-Hackathon/server/Dockerfile).
+5. The app serves on port `8000`.
 
 ## Repository structure
 
