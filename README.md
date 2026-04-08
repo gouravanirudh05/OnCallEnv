@@ -256,11 +256,11 @@ Expected output shape:
 
 Baseline note: The baseline is reproducible with respect to task seeds, but exact model outputs can still vary across API runs and model versions.
 
-Baseline scores (Gemini run from teammate logs; replace after running `inference.py`):
+Baseline scores (Qwen/Qwen2.5-72B-Instruct via HF router):
 
-* Task 1 (severity_classification): 1.01
-* Task 2 (alert_storm): 1.65
-* Task 3 (timeline_labelling): 1.23
+* Task 1 (severity_classification): 0.36
+* Task 2 (alert_storm): 0.00
+* Task 3 (timeline_labelling): 0.64
 
 ## Local setup
 
