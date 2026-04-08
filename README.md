@@ -382,7 +382,7 @@ Hugging Face Spaces deployment:
 │   ├── service_graph.yaml
 │   ├── alert_templates.yaml
 │   └── scenarios/
-│       └── *.yaml
+│       └── "*.yaml"
 │
 ├── server/
 │   ├── app.py                # FastAPI/OpenEnv app
