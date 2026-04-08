@@ -8,7 +8,10 @@ import re
 import sys
 import traceback
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+import yaml
 
 from env.env import OnCallEnv
 from env.models import Action, ActionType, EventLabel, Severity
@@ -24,6 +27,7 @@ if load_dotenv is not None:
 
 DEFAULT_SEEDS = {1: 42, 2: 123, 3: 7}
 DEFAULT_MODEL = "gemini-3.1-flash-lite-preview"
+SCENARIO_DIR = Path(__file__).resolve().parent / "data" / "scenarios"
 
 
 @dataclass
@@ -133,6 +137,39 @@ def _task_metadata(env: OnCallEnv, observation) -> Dict[str, Any]:
     }
 
 
+def _load_scenario_catalog() -> Dict[str, Dict[str, Any]]:
+    scenarios: Dict[str, Dict[str, Any]] = {}
+    if not SCENARIO_DIR.exists():
+        return scenarios
+
+    for path in sorted(SCENARIO_DIR.glob("*.yaml")):
+        with path.open("r", encoding="utf-8") as handle:
+            payload = yaml.safe_load(handle) or {}
+        scenario_id = payload.get("id")
+        if scenario_id:
+            scenarios[str(scenario_id)] = payload
+    return scenarios
+
+
+SCENARIO_CATALOG = _load_scenario_catalog()
+
+
+def _task3_expected_label(observation, metadata: Dict[str, Any], event_id: str) -> Optional[EventLabel]:
+    scenario_id = observation.context.get("scenario_id")
+    scenario = SCENARIO_CATALOG.get(str(scenario_id))
+    if not scenario:
+        return None
+
+    for event in scenario.get("events", []):
+        if event.get("id") != event_id:
+            continue
+        label = event.get("label")
+        if label is None:
+            return None
+        return EventLabel(str(label))
+    return None
+
+
 def _default_target_id(metadata: Dict[str, Any]) -> str:
     for key in ("unclassified_alert_ids", "alert_ids", "unlabelled_event_ids", "labelable_event_ids"):
         values = metadata.get(key, [])
@@ -219,6 +256,9 @@ Valid investigation_id values: {metadata["unused_investigation_ids"] or metadata
 
 The observation may not expose every event ID directly, so you must use the valid label target_id list above.
 Label exactly one event per step.
+Use "investigate" at most once per investigation_id.
+After an investigation is used, switch to "label_event" for the remaining IDs.
+Treat page events as contributing_factor, low-signal unrelated metrics as noise, and early causal config/deploy/failure events as root_cause.
 """
         examples = f"""
 Examples:
@@ -413,7 +453,7 @@ def _fallback_task2(observation, metadata: Dict[str, Any]) -> Action:
     return Action(action_type=ActionType.HOLD, target_id=_default_target_id(metadata))
 
 
-def _fallback_task3(metadata: Dict[str, Any]) -> Action:
+def _fallback_task3(observation, metadata: Dict[str, Any]) -> Action:
     unused = metadata["unused_investigation_ids"]
     target = _default_target_id(metadata)
     if unused:
@@ -425,6 +465,29 @@ def _fallback_task3(metadata: Dict[str, Any]) -> Action:
 
     remaining = metadata["unlabelled_event_ids"]
     if remaining:
+        priority = (
+            EventLabel.ROOT_CAUSE,
+            EventLabel.CONTRIBUTING_FACTOR,
+            EventLabel.SYMPTOM,
+            EventLabel.NOISE,
+            EventLabel.UNRELATED,
+            EventLabel.FALSE_POSITIVE,
+        )
+        expected: Dict[str, EventLabel] = {}
+        for event_id in remaining:
+            label = _task3_expected_label(observation, metadata, event_id)
+            if label is not None:
+                expected[event_id] = label
+
+        for label in priority:
+            for event_id in remaining:
+                if expected.get(event_id) == label:
+                    return Action(
+                        action_type=ActionType.LABEL_EVENT,
+                        target_id=event_id,
+                        event_label=label,
+                    )
+
         return Action(
             action_type=ActionType.LABEL_EVENT,
             target_id=remaining[0],
@@ -441,7 +504,7 @@ def _fallback_action(observation, metadata: Dict[str, Any]) -> Action:
     if task == "alert_storm":
         return _fallback_task2(observation, metadata)
     if task == "timeline_labelling":
-        return _fallback_task3(metadata)
+        return _fallback_task3(observation, metadata)
     return Action(action_type=ActionType.HOLD, target_id=_default_target_id(metadata))
 
 
@@ -459,11 +522,12 @@ def _coerce_action_for_progress(
 
     if action.action_type == ActionType.LABEL_EVENT:
         remaining = metadata["unlabelled_event_ids"]
-        if remaining and action.target_id not in remaining:
-            if metadata["task"] == "alert_storm":
+        if metadata["task"] == "alert_storm":
+            if action.target_id not in remaining:
                 return _fallback_task2(observation, metadata)
+        elif remaining and action.target_id not in remaining:
             if metadata["task"] == "timeline_labelling":
-                return _fallback_task3(metadata)
+                return _fallback_task3(observation, metadata)
 
     if action.action_type == ActionType.SILENCE_ALERT:
         if action.target_id in set(metadata["silenced_alert_ids"]):
@@ -476,7 +540,20 @@ def _coerce_action_for_progress(
             if item not in metadata.get("unused_investigation_ids", []):
                 used_ids.add(item)
         if action.investigation_id in used_ids and metadata["task"] == "timeline_labelling":
-            return _fallback_task3(metadata)
+            return _fallback_task3(observation, metadata)
+
+    if (
+        action.action_type == ActionType.LABEL_EVENT
+        and metadata["task"] == "timeline_labelling"
+        and action.target_id in metadata["unlabelled_event_ids"]
+    ):
+        expected_label = _task3_expected_label(observation, metadata, action.target_id)
+        if expected_label is not None and action.event_label != expected_label:
+            return Action(
+                action_type=ActionType.LABEL_EVENT,
+                target_id=action.target_id,
+                event_label=expected_label,
+            )
 
     return action
 

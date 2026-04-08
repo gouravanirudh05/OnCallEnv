@@ -168,7 +168,16 @@ class OnCallEnv:
             return len(self._state.classified_alerts) >= len(
                 self._state.ground_truth.get("alerts", {})
             )
-        if self._state.task_id in (2, 3):
+        if self._state.task_id == 2:
+            labels = self._state.ground_truth.get("event_labels", {})
+            labelled_complete = len(self._state.labelled_events) >= len(labels)
+            false_positive_ids = {
+                alert_id for alert_id, label in labels.items() if label == "false_positive"
+            }
+            silenced_complete = false_positive_ids.issubset(set(self._state.silenced_alerts))
+            escalation_complete = self._state.escalation is not None
+            return labelled_complete and silenced_complete and escalation_complete
+        if self._state.task_id == 3:
             return len(self._state.labelled_events) >= len(
                 self._state.ground_truth.get("event_labels", {})
             )

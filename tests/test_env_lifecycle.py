@@ -103,3 +103,42 @@ def test_task3_labeling_completion():
         )
         observation, _, done, _ = env.step(action)
     assert done is True
+
+
+def test_task2_requires_silence_and_escalation_for_completion():
+    env = OnCallEnv()
+    observation = env.reset(task_id=2, seed=123)
+    state = env.state()
+    labels = state["ground_truth"]["event_labels"]
+
+    for event_id, label in labels.items():
+        action = Action(
+            action_type=ActionType.LABEL_EVENT,
+            target_id=event_id,
+            event_label=EventLabel(label),
+        )
+        observation, _, done, _ = env.step(action)
+
+    assert done is False
+
+    false_positive_ids = [
+        event_id for event_id, label in labels.items() if label == EventLabel.FALSE_POSITIVE.value
+    ]
+    for event_id in false_positive_ids:
+        observation, _, done, _ = env.step(
+            Action(action_type=ActionType.SILENCE_ALERT, target_id=event_id)
+        )
+
+    assert done is False
+
+    escalation = state["ground_truth"]["escalation"]
+    observation, _, done, _ = env.step(
+        Action(
+            action_type=ActionType.ESCALATE,
+            target_id=observation.alerts[0].id if observation.alerts else "noop",
+            team=escalation["team"],
+            severity=Severity(escalation["severity"]),
+        )
+    )
+
+    assert done is True
