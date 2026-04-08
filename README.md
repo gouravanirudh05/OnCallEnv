@@ -1,17 +1,3 @@
----
-
-title: OnCallEnv
-sdk: docker
-app_port: 8000
-tags:
-
-* openenv
-* rl
-* sre
-* incident-response
-
----
-
 # OnCallEnv
 
 OnCallEnv is an OpenEnv-compatible reinforcement learning environment for on-call incident response. It simulates a real operational workflow that human SREs and platform engineers actually perform: interpreting alerts, tracing cascades through a service graph, suppressing false positives, escalating to the right team, and reconstructing incident timelines from noisy evidence.
@@ -382,7 +368,7 @@ Hugging Face Spaces deployment:
 │   ├── service_graph.yaml
 │   ├── alert_templates.yaml
 │   └── scenarios/
-│       └── "*.yaml"
+│       └── *.yaml
 │
 ├── server/
 │   ├── app.py                # FastAPI/OpenEnv app
