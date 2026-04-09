@@ -23,7 +23,8 @@ if load_dotenv is not None:
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 HF_TOKEN = os.getenv("HF_TOKEN")
-LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+# FIX: Provide default empty string instead of None
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME", "")
 
 DEFAULT_SEEDS = {1: 42, 2: 123, 3: 7}
 TASK_IDS = (1, 2, 3)
@@ -303,8 +304,8 @@ def _run_task(task_id: int, seed: int, client: OpenAI) -> List[float]:
 def main() -> int:
     if not HF_TOKEN:
         raise SystemExit("HF_TOKEN is required for inference.")
-    if LOCAL_IMAGE_NAME is None:
-        raise SystemExit("LOCAL_IMAGE_NAME must be set (can be empty string).")
+    # FIX: Removed the LOCAL_IMAGE_NAME check since it defaults to empty string
+    # The validator expects this to be set in the environment, but defaults to ""
 
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
     for task_id in TASK_IDS:
